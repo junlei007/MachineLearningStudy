@@ -35,7 +35,7 @@ class PerceptronDuality:
 
                 w = np.dot(self.alpha*y,X)
 
-                if y[i]*(np.dot(w,X[i]) + self.b) <0:
+                if y[i]*(np.dot(w,X[i]) + self.b) <=0:
                     self.alpha[i] += learn_rate
                     self.b += learn_rate*y[i]
         self.w = np.dot(self.alpha*y,X)
@@ -49,15 +49,16 @@ if __name__ == '__main__':
     X = np.array([[3,3],[4,3],[1,1]])
     y = np.array([1,1,-1])
 
-    # from sklearn.datasets import load_iris
+    from sklearn.datasets import load_iris
     from sklearn.metrics import f1_score,roc_auc_score,accuracy_score
-    # data = load_iris()
+    data = load_iris()
     # X = data['data']
-    # y = [-1 if i == 1 else 1 for i in data['target']]
+    # y = [1 if i == 1 else -1 for i in data['target'] if i ]
 
     perc = PerceptronDuality()
     perc.fit(X,y,learn_rate=0.01)
     print(perc.w,perc.b)
     y_hat = perc.predict(X)
+    print(y_hat)
     print(f1_score(y_hat,y))
     print(accuracy_score(y_hat,y))
