@@ -21,6 +21,23 @@ class KNN:
                 y_hat = key
         return y_hat
 
+class kdKNN
+    def __init__(self,X,y,k=7):
+        self.X = X
+        self.y = y
+        self.k = k
+
+    def build_kd_tree(self):
+        pass
+
+
+    @staticmethod
+    def distance(x0,x1):
+        return np.sqrt(np.sum(np.abs(x0-x1)**2))
+
+    def predict(self,x):
+        pass
+
 if __name__ == '__main__':
 
     from sklearn.datasets import load_iris
