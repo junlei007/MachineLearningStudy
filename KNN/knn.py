@@ -21,7 +21,34 @@ class KNN:
                 y_hat = key
         return y_hat
 
-class kdKNN
+
+class kdNode:
+    def __init__(self,data):
+        self.data  = data
+        self.left  = None
+        self.right = None
+
+class kdTree:
+    def __init__(self,X):
+        self.X = X
+        self.root,self.start_dim = self.set_root()
+
+    def set_root(self):
+        start_dim = 0
+        var = np.std(self.X[:,start_dim])
+        for col in range(1,self.X.shape[1]):
+            col_var = np.std(self.X[:,col])
+            if col_var > var:
+                start_dim = col
+                var = col_var
+        self.X = self.X[self.X[:,start_dim].argsort()]
+
+        root = kdNode(self.X[self.X.shape[0]//2])
+
+        return start_dim
+
+
+class kdKNN:
     def __init__(self,X,y,k=7):
         self.X = X
         self.y = y
@@ -40,16 +67,25 @@ class kdKNN
 
 if __name__ == '__main__':
 
-    from sklearn.datasets import load_iris
-    from sklearn.metrics import f1_score,roc_auc_score,accuracy_score
-    data = load_iris()
-    X = data['data']
-    y = data['target']
-    knn = KNN(X,y,k=10)
-    print(knn.predict(X[0]))
-    y_hat = [knn.predict(x) for x in X]
-    print(accuracy_score(y_hat,y))
-
-
-
+    # from sklearn.datasets import load_iris
+    # from sklearn.metrics import f1_score,roc_auc_score,accuracy_score
+    # data = load_iris()
+    # X = data['data']
+    # y = data['target']
+    # knn = KNN(X,y,k=10)
+    # print(knn.predict(X[0]))
+    # y_hat = [knn.predict(x) for x in X]
+    # print(accuracy_score(y_hat,y))
+    #
+    data = [
+        [1,2],
+        [3,1],
+        [2,4],
+        [6,7],
+        [4,4]
+    ]
+    a = np.array(data)
+    b =a[a[:,1].argsort()]
+    b =a[a[:,0].argsort()]
+    print(b)
 
