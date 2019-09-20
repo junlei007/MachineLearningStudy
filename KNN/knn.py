@@ -31,7 +31,7 @@ class kdNode:
 class kdTree:
     def __init__(self,X):
         self.X = X
-        self.root,self.start_dim = self.set_root()
+        self.start_dim = self.set_root()
 
     def set_root(self):
         start_dim = 0
@@ -41,11 +41,22 @@ class kdTree:
             if col_var > var:
                 start_dim = col
                 var = col_var
-        self.X = self.X[self.X[:,start_dim].argsort()]
-
-        root = kdNode(self.X[self.X.shape[0]//2])
-
         return start_dim
+    
+
+    def build_tree(self, kdData, dim):
+
+        kdData = kdData[kdData[:, dim].argsort()]
+
+        mid_num = kdData.shape[0]//2
+        root = kdNode(kdData[mid_num])
+
+        new_dim = 0 if dim == kdData.shape[1]-1 else dim+1
+
+        root.left = self.build_tree(kdData[:mid_num],new_dim)
+        root.right = self.build_tree(kdData[mid_num+1:],new_dim)
+
+        return root
 
 
 class kdKNN:
