@@ -32,6 +32,7 @@ class kdTree:
     def __init__(self,X):
         self.X = X
         self.start_dim = self.set_root()
+        self.root = self.build_tree(self.X,self.start_dim)
 
     def set_root(self):
         start_dim = 0
@@ -45,6 +46,8 @@ class kdTree:
     
 
     def build_tree(self, kdData, dim):
+        if len(kdData) == 0:
+            return None
 
         kdData = kdData[kdData[:, dim].argsort()]
 
@@ -57,6 +60,19 @@ class kdTree:
         root.right = self.build_tree(kdData[mid_num+1:],new_dim)
 
         return root
+
+    def find_leaf(self,x0):
+
+        start_node = self.root
+        start_dim  = self.start_dim
+        length     = len(x0)
+        while start_node.right or start_node.left:
+           if x0[start_dim] <= start_node.data[start_dim]:
+               start_node = start_node.left
+           else:
+               start_node = start_node.right
+           start_dim = 0 if start_dim == length-1 else start_dim+1
+        return start_node
 
 
 class kdKNN:
@@ -89,14 +105,25 @@ if __name__ == '__main__':
     # print(accuracy_score(y_hat,y))
     #
     data = [
-        [1,2],
-        [3,1],
-        [2,4],
-        [6,7],
-        [4,4]
+        [7,2],
+        [5,4],
+        [9,6],
+        [2,3],
+        [4,7],
+        [8,1]
     ]
     a = np.array(data)
-    b =a[a[:,1].argsort()]
-    b =a[a[:,0].argsort()]
-    print(b)
+    kdt = kdTree(a)
 
+    node = kdt.root
+    l = [kdt.root]
+    while l:
+        node = l.pop()
+        if node.left:
+            l.insert(0,node.left)
+        if node.right:
+            l.insert(0,node.right)
+        print(node.data)
+
+    near_leaf = kdt.find_leaf([6,1])
+    print(near_leaf.data)
