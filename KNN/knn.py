@@ -104,20 +104,20 @@ class kdTree:
         leaf_node,leaf_dim= self.find_leaf(root_node,start_dim,x0)
         dl = np.linalg.norm(np.array(x0)-np.array(leaf_node.data))
         # print(leaf_node.data)
-        # 确定当前最近节点和距离
-        if not near_node:
-            near_node = leaf_node
-            d = dl
-        else:
-            d = np.linalg.norm(np.array(x0)-np.array(near_node.data))
-            if d < dl:
-                d = dl
-                near_node = leaf_node
         # 向上回溯
         search_node = leaf_node
         search_dim  = leaf_dim
         while search_node.father:
-            # print(search_node.data,near_node.data)
+            # 确定当前最近节点和距离
+            if not near_node:
+                near_node = search_node
+                d = dl
+            else:
+                d = np.linalg.norm(np.array(x0)-np.array(search_node.data))
+                if d < dl:
+                    d = dl
+                    near_node = search_node
+            print(search_node.data,near_node.data)
             if search_node == root_node:
                 break
             last_node = search_node
@@ -131,6 +131,7 @@ class kdTree:
 
             d_circle = np.abs(x0[search_dim] - search_node.data[search_dim])
 
+            # 如果内交就从内交的点开始继续查找
             if d_circle < d:
                 branch_node = search_node.right if search_node.left is last_node else search_node.left
                 near_node = self.recall_node(branch_node,x0,last_dim,near_node)
