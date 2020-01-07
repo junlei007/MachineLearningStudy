@@ -23,11 +23,12 @@ class KNN:
 
 
 class kdNode:
-    def __init__(self,data,father=None):
+    def __init__(self,data,dim=None,father=None):
         self.data   = data
         self.left   = None
         self.right  = None
         self.father = father
+        self.dim    = dim
 
 class kdTree:
     def __init__(self,X):
@@ -57,42 +58,50 @@ class kdTree:
         if len(kdData) == 0:
             return None
 
-        kdData = kdData[kdData[:, dim].argsort()]               # 排序
+        idxData = kdData[:, dim].argsort()
 
-        mid_num = kdData.shape[0]//2                            # 取得中间位置的点
-        root = kdNode(kdData[mid_num],father)                   # 构建节点
+        mid_idx = idxData.shape[0]//2
+        mid_num = idxData[mid_idx]                      # 取得中间位置的点
+        root = kdNode(kdData[mid_num],dim,father)                   # 构建节点
 
+        # print(kdData)
+        # print('节点:',root.data)
+        # print('dim:',root.dim)
+        # print('*'*10)
         new_dim = 0 if dim == kdData.shape[1]-1 else dim+1      # 比较维度更改
                                                                 # 递归左右子树
-        root.left = self.build_tree(kdData[:mid_num],new_dim,root)
-        root.right = self.build_tree(kdData[mid_num+1:],new_dim,root)
+        root.left = self.build_tree(kdData[idxData][:mid_idx],new_dim,root)
+        root.right = self.build_tree(kdData[idxData][mid_idx+1:],new_dim,root)
 
         return root
 
     def find_close_one(self,x0):
-        close_node = self.recall_node(root_node=self.root,x0=x0,start_dim=self.start_dim)
+        close_node = self.recall_node(root_node=self.root,x0=x0)
         return close_node
 
     @staticmethod
-    def find_leaf(start_node,start_dim,x0):
+    def find_leaf(start_node,x0):
         """
         寻找x0所对应的最小叶节点
-        :param start_dim: 开始的维度
         :param start_node: 开始的节点
         :param x0: 寻找的数据
         :return:
         """
-        length  = len(x0)
+        # length  = len(x0)
+        start_dim = start_node.dim
         while start_node.right or start_node.left:
-           if x0[start_dim] <= start_node.data[start_dim]:
-               start_node = start_node.left
-           else:
-               start_node = start_node.right
-           start_dim = 0 if start_dim == length-1 else start_dim+1
+            start_dim = start_node.dim
+            # print(start_node.data,start_dim,x0)
+            if x0[start_dim] <= start_node.data[start_dim]:
+                start_node = start_node.left
+            else:
+                start_node = start_node.right
+            # start_dim = 0 if start_dim == length-1 else start_dim+1
+
         return start_node,start_dim
 
 
-    def recall_node(self,root_node,x0,start_dim,near_node=None):
+    def recall_node(self,root_node,x0,near_node=None):
         """
         :param root_node: 从哪个节点开始查找
         :param near_node: 目前最近的节点
@@ -101,42 +110,41 @@ class kdTree:
         :return:
         """
 
-        leaf_node,leaf_dim= self.find_leaf(root_node,start_dim,x0)
+        leaf_node,leaf_dim= self.find_leaf(root_node,x0)
         dl = np.linalg.norm(np.array(x0)-np.array(leaf_node.data))
         # print(leaf_node.data)
         # 向上回溯
         search_node = leaf_node
-        search_dim  = leaf_dim
+        search_dim  = leaf_node.dim
         while search_node.father:
             # 确定当前最近节点和距离
             if not near_node:
                 near_node = search_node
                 d = dl
             else:
-                d = np.linalg.norm(np.array(x0)-np.array(search_node.data))
-                if d < dl:
-                    d = dl
-                    near_node = search_node
-            print(search_node.data,near_node.data)
+                d = np.linalg.norm(np.array(x0)-np.array(near_node.data))
+                # if d < dl:
+                #     near_node = search_node
+            # print(search_node.data,near_node.data)
             if search_node == root_node:
                 break
             last_node = search_node
-            last_dim  = search_dim
-            search_dim = len(x0) - 1 if search_dim == 0 else search_dim - 1
+            # last_dim  = search_dim
+            # search_dim = search_node
             search_node = search_node.father
+            search_dim = search_node.dim
             d_sn = np.linalg.norm(np.array(x0)-np.array(search_node.data))
             if d_sn < d:
                 d = d_sn
                 near_node = search_node
+                # print(near_node.data,d)
 
             d_circle = np.abs(x0[search_dim] - search_node.data[search_dim])
 
             # 如果内交就从内交的点开始继续查找
             if d_circle < d:
                 branch_node = search_node.right if search_node.left is last_node else search_node.left
-                near_node = self.recall_node(branch_node,x0,last_dim,near_node)
-
-
+                near_node = self.recall_node(branch_node,x0,near_node)
 
         return near_node
 
@@ -180,12 +188,13 @@ if __name__ == '__main__':
     ]
     a = np.array(data)
     kdt = kdTree(a)
-    near_leaf = kdt.find_close_one([6.9,0])
+    test_data = [9,3]
+    near_leaf = kdt.find_close_one(test_data)
     print(near_leaf.data)
     #
     # print(kdt.find_leaf(kdt.root,kdt.start_dim,[6,1])[0].data)
 
-    a=np.linalg.norm(np.array([6.9,0])-np.array([7,2]))
-    b=np.linalg.norm(np.array([6.9,0])-np.array([8,1]))
-
-    print(a,b)
+    a=np.linalg.norm(np.array(test_data)-np.array([9,6]))
+    print(a)
+    b=np.linalg.norm(np.array(test_data)-np.array([8,1]))
+    print(b)
